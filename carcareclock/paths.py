@@ -22,9 +22,27 @@ def repo_root() -> Path:
 
 def data_dir() -> Path:
     override = os.environ.get("CARCARE_DATA_DIR")
-    path = Path(override).resolve() if override else repo_root() / "data"
+    if override:
+        path = Path(override).expanduser().resolve()
+    elif getattr(sys, "frozen", False):
+        path = _packaged_data_dir()
+    else:
+        path = repo_root() / "data"
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _packaged_data_dir() -> Path:
+    """Return a mutable user-data location, never PyInstaller's bundle cache."""
+    if sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
+        if base:
+            return Path(base) / "CarCareClock"
+        return Path.home() / "AppData" / "Local" / "CarCareClock"
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "CarCareClock"
+    base = os.environ.get("XDG_DATA_HOME")
+    return (Path(base) if base else Path.home() / ".local" / "share") / "CarCareClock"
 
 
 def database_path() -> Path:
