@@ -45,6 +45,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Register the checker with the OS. Leave this off; it is not the default.",
     )
+    install.add_argument(
+        "--disable",
+        action="store_true",
+        help="Remove CarCareClock's cron entry while preserving other entries.",
+    )
 
     args = parser.parse_args(argv)
     command = args.cmd or "serve"
@@ -61,7 +66,9 @@ def main(argv: list[str] | None = None) -> int:
     if command == "export-ics":
         return cmd_export(args.output)
     if command == "install-checker":
-        return cmd_install(args.kind, args.enable)
+        if args.enable and args.disable:
+            parser.error("--enable and --disable cannot be used together")
+        return cmd_install(args.kind, args.enable, args.disable)
     parser.print_help()
     return 2
 
@@ -145,16 +152,25 @@ def cmd_export(output: Path) -> int:
     return 0
 
 
-def cmd_install(kind: str, enable: bool) -> int:
+def cmd_install(kind: str, enable: bool, disable: bool = False) -> int:
+    if disable and kind != "cron":
+        print("--disable is currently supported for cron only.")
+        return 2
     if enable:
-        print("Enabling the background checker because --enable was passed.")
+        action = "enable"
     else:
-        print("Writing the checker file only. It is off by default. Pass --enable to register it.")
+        action = "disable" if disable else "write"
     try:
-        path = install_checker(kind, repo_root(), data_dir(), enable=enable)
+        path = install_checker(kind, repo_root(), data_dir(), enable=enable, disable=disable)
     except OSError as exc:
         print(exc)
         return 2
+    if action == "enable":
+        print("Enabled the background checker.")
+    elif action == "disable":
+        print("Disabled the CarCareClock cron entry; other cron entries were preserved.")
+    else:
+        print("Writing the checker file only. It is off by default. Pass --enable to register it.")
     print(path)
     return 0
 

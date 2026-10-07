@@ -40,7 +40,7 @@ python -m carcareclock install-checker cron
 python -m carcareclock install-checker task
 ```
 
-`scripts/install_launchd.sh`, `scripts/install_cron.sh`, and `scripts/install_task.ps1` do the same thing and do not pass `--enable`. The cron line is commented out. On a Mac, `--enable` runs `launchctl`. On Windows, `--enable` runs `schtasks`.
+`scripts/install_launchd.sh`, `scripts/install_cron.sh`, and `scripts/install_task.ps1` do the same thing and do not pass `--enable`. The cron line is commented out. On a Mac, `--enable` runs `launchctl`. On Windows, `--enable` runs `schtasks`. For cron, `--enable` adds one managed entry while preserving other entries; `python -m carcareclock install-checker cron --disable` removes only that entry.
 
 ## Dev setup
 
@@ -63,7 +63,7 @@ The tests cover whichever-comes-first, mileage projection (including a daylight-
 
 ## Privacy
 
-- The database is `data/carcareclock.sqlite`. `data/` is gitignored.
+- In a checkout the database is `data/carcareclock.sqlite`. In packaged Windows/Linux/macOS apps it is stored in the current user's application-data folder, outside the read-only package/extraction resources. `CARCARE_DATA_DIR` and `CARCARE_DB` explicitly override those locations. `data/` is gitignored.
 - There is no VIN field and no license plate field.
 - Demo rows are fictional. Do not put a real home address, a real email, or a child's information in the shop or notes fields if you might share the database.
 - The optional Flask secret used for flash messages is written to `data/secret.key` and is not committed.
