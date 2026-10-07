@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="CarCareClock">
+  <rect width="1024" height="1024" rx="224" fill="#2B313B"/>
+  <path fill="#F5B400" d="M512 512 L512 205 A307 307 0 0 1 729 729 Z"/>
+  <circle cx="512" cy="512" r="307" fill="none" stroke="#F6F1E6" stroke-width="56"/>
+  <circle cx="512" cy="512" r="42" fill="#F6F1E6"/>
+</svg>

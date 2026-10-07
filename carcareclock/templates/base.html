@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}CarCareClock{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('asset', name='icon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <img src="{{ url_for('asset', name='icon-512.png') }}" alt="" width="44" height="44">
+      <span class="wordmark"><span class="car">Car</span><span class="care">Care</span><span class="clock">Clock</span></span>
+    </a>
+    <nav>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('history') }}">Service history</a>
+      <a href="{{ url_for('rules_page') }}">Rules</a>
+      <a href="{{ url_for('export_ics') }}">Calendar export</a>
+      <a href="{{ url_for('new_vehicle') }}">Add vehicle</a>
+    </nav>
+  </header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash {{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block body %}{% endblock %}
+  </main>
+  <footer>
+    <p>{{ verify_note }}</p>
+  </footer>
+</body>
+</html>

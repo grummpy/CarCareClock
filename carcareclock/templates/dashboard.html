@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · CarCareClock{% endblock %}
+{% block body %}
+<section class="hero">
+  <div>
+    <h1>What is coming due</h1>
+    <p class="lede">Prince George's County household cars. Emissions, registration, and maintenance stay in a local database on this computer.</p>
+  </div>
+  <form class="window" method="post" action="{{ url_for('post_settings') }}">
+    <label for="window_days">Show reminders due within</label>
+    <input id="window_days" name="window_days" type="number" min="0" max="365" value="{{ window_days }}" required>
+    <span>days, plus anything overdue</span>
+    <button type="submit">Save</button>
+  </form>
+</section>
+
+<section class="reminders" aria-labelledby="reminder-heading">
+  <h2 id="reminder-heading">Due within {{ window_days }} days or overdue</h2>
+  {% if reminders %}
+    <ul class="reminder-list">
+      {% for item in reminders %}
+        <li class="reminder {{ item.status }}">
+          <a href="{{ url_for('vehicle', vehicle_id=item.vehicle_id) }}">
+            <strong>{{ item.vehicle_name }}</strong>
+            <span>{{ item.label }}</span>
+            <em>{{ item.phrase }}</em>
+            {% if item.date_label %}<time>{{ item.date_label }}</time>{% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty">Nothing is due in the next {{ window_days }} days, and nothing is overdue.</p>
+  {% endif %}
+</section>
+
+<section class="layout">
+  <div class="cards">
+    {% for card in cards %}
+      <article class="vehicle-card">
+        <header>
+          <div>
+            <h2><a href="{{ url_for('vehicle', vehicle_id=card.id) }}">{{ card.nickname }}</a></h2>
+            <p>{{ card.model_year }} {{ card.make }} {{ card.model }} · {{ county_label(card.county) }}</p>
+            {% if card.is_demo %}<p class="demo-flag">Fictional demo. No VIN or plate is stored.</p>{% endif %}
+          </div>
+          <div class="odo" aria-label="{{ card.miles_display }} miles">
+            <span>{{ card.miles_display }}</span>
+            <small>mi</small>
+          </div>
+        </header>
+        <p class="rate">{{ card.rate_display }}</p>
+        <ul class="chips">
+          {% for chip in card.chips %}
+            <li class="chip tone-{{ chip.tone }}">
+              <span class="chip-icon glyph-{{ chip.key }}" aria-hidden="true"></span>
+              <strong>{{ chip.label }}</strong>
+              <em>{{ chip.phrase }}</em>
+              {% if chip.date_label %}<time>{{ chip.date_label }}</time>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </article>
+    {% else %}
+      <p class="empty">No vehicles yet. <a href="{{ url_for('new_vehicle') }}">Add one</a>.</p>
+    {% endfor %}
+  </div>
+
+  <aside>
+    <form class="panel" method="post" action="{{ url_for('post_mileage') }}">
+      <h2>Log mileage</h2>
+      {% if vehicles %}
+        <label for="mileage-vehicle">Vehicle</label>
+        <select id="mileage-vehicle" name="vehicle_id">
+          {% for vehicle in vehicles %}
+            <option value="{{ vehicle.id }}">{{ vehicle.nickname }}</option>
+          {% endfor %}
+        </select>
+        <label for="mileage-date">Date</label>
+        <input id="mileage-date" name="reading_date" type="date" value="{{ today }}" required>
+        <label for="mileage-miles">Odometer</label>
+        <input id="mileage-miles" name="miles" inputmode="numeric" required placeholder="24578">
+        <button type="submit">Save reading</button>
+      {% else %}
+        <p>Add a vehicle before logging miles.</p>
+      {% endif %}
+    </form>
+  </aside>
+</section>
+
+<section>
+  <h2>Due-soon timeline</h2>
+  <p class="lede">Overdue items and the next 180 days. The reminder list above is only the {{ window_days }}-day window.</p>
+  {% if timeline %}
+    <ol class="timeline">
+      {% for item in timeline %}
+        <li class="status-{{ item.status }}">
+          <time>{{ item.date_label }}</time>
+          <div>
+            <a href="{{ url_for('vehicle', vehicle_id=item.vehicle_id) }}">{{ item.vehicle_name }} · {{ item.label }}</a>
+            <span>{{ item.phrase }}</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="empty">No dated items in the next 180 days.</p>
+  {% endif %}
+</section>
+{% endblock %}

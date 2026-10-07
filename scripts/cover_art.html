@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CarCareClock cover</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1600px; height: 900px; overflow: hidden; }
+    body {
+      background: #f6f1e6;
+      font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+      color: #1b2433;
+      position: relative;
+    }
+    .wordmark {
+      position: absolute;
+      top: 28px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 84px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .car { color: #e23b32; }
+    .care { color: #1b2433; }
+    .clock { color: #f5b400; }
+    .rule {
+      position: absolute;
+      top: 126px;
+      left: 560px;
+      width: 480px;
+      height: 4px;
+      background: #e23b32;
+    }
+    .rule i {
+      position: absolute;
+      left: 50%;
+      top: -5px;
+      width: 14px;
+      height: 14px;
+      margin-left: -7px;
+      background: #e23b32;
+      border-radius: 50%;
+    }
+    .checks {
+      position: absolute;
+      top: 78px;
+      left: 36px;
+      width: 280px;
+      height: 92px;
+      background:
+        repeating-conic-gradient(#e23b32 0% 25%, #f5b400 0% 50%) 0 0 / 46px 46px;
+      border-radius: 8px;
+    }
+    .stripe {
+      position: absolute;
+      top: 86px;
+      right: 28px;
+      width: 340px;
+      height: 78px;
+      background: #2b313b;
+      border-radius: 8px;
+    }
+    .stripe span {
+      position: absolute;
+      top: 18px;
+      width: 42px;
+      height: 42px;
+      background:
+        linear-gradient(#f5b400, #f5b400) center/42px 12px no-repeat,
+        linear-gradient(#f5b400, #f5b400) center/12px 42px no-repeat;
+    }
+    .stripe span:nth-child(1) { left: 36px; }
+    .stripe span:nth-child(2) { left: 148px; }
+    .stripe span:nth-child(3) { left: 260px; }
+    .gauge {
+      position: absolute;
+      top: 150px;
+      left: 620px;
+      width: 360px;
+      height: 360px;
+    }
+    .house { position: absolute; left: 40px; top: 250px; width: 340px; height: 280px; }
+    .roof { width: 0; height: 0; border-left: 180px solid transparent; border-right: 180px solid transparent; border-bottom: 70px solid #6d737c; margin-left: -10px; }
+    .wall {
+      width: 320px;
+      height: 190px;
+      background:
+        linear-gradient(#c4553a, #c4553a) 0 0 / 100% 100%,
+        repeating-linear-gradient(0deg, transparent 0 22px, #a14332 22px 26px),
+        repeating-linear-gradient(90deg, transparent 0 48px, #a14332 48px 52px);
+      background-blend-mode: multiply;
+      background-color: #c4553a;
+    }
+    .garage { position: absolute; left: 36px; bottom: 0; width: 150px; height: 120px; background: #8d939c; border-radius: 4px 4px 0 0; }
+    .door { position: absolute; right: 36px; bottom: 28px; width: 54px; height: 90px; background: #6d4a3a; }
+    .lantern { position: absolute; right: 104px; bottom: 128px; width: 14px; height: 22px; background: #1b2433; border-radius: 4px; }
+    .bush { position: absolute; bottom: 18px; height: 46px; background: #3f8f45; border-radius: 40px 40px 8px 8px; }
+    .suv { position: absolute; left: 390px; top: 430px; width: 620px; height: 210px; }
+    .trees { position: absolute; right: 40px; top: 250px; width: 420px; height: 280px; }
+    .tree { position: absolute; bottom: 40px; background: #2f8a43; border-radius: 80px 80px 20px 20px; }
+    .trunk { position: absolute; bottom: 0; width: 16px; height: 48px; background: #6a4a32; }
+    .fence { position: absolute; right: 70px; bottom: 300px; width: 280px; height: 54px; }
+    .fence i { position: absolute; bottom: 0; width: 10px; background: #f7f7f7; border: 1px solid #d9d9d9; }
+    .drive { position: absolute; left: 0; right: 0; bottom: 168px; height: 150px; background: #e7e1d6; }
+    .cards { position: absolute; left: 36px; right: 150px; bottom: 28px; display: flex; gap: 16px; }
+    .card {
+      flex: 1;
+      background: white;
+      border-radius: 22px;
+      box-shadow: 0 8px 20px rgba(27, 36, 51, 0.08);
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      align-items: center;
+      height: 118px;
+    }
+    .badge { width: 64px; height: 64px; border-radius: 16px; flex: none; }
+    .red { background: #e23b32; }
+    .slate { background: #3c4452; }
+    .gold { background: #f5b400; }
+    .green { background: #2f9e4f; }
+    .card strong { display: block; font-size: 22px; }
+    .card em { display: block; font-style: normal; font-weight: 800; font-size: 18px; }
+    .card time { color: #5e6872; font-size: 16px; }
+    .due-red { color: #e23b32; }
+    .due-slate { color: #3c4452; }
+    .due-gold { color: #c48900; }
+    .due-green { color: #2f9e4f; }
+    .appicon { position: absolute; right: 36px; bottom: 36px; width: 110px; height: 110px; }
+  </style>
+</head>
+<body>
+  <div class="checks"></div>
+  <div class="stripe"><span></span><span></span><span></span></div>
+  <div class="wordmark"><span class="car">Car</span><span class="care">Care</span><span class="clock">Clock</span></div>
+  <div class="rule"><i></i></div>
+  <svg class="gauge" viewBox="0 0 360 360">
+    <circle cx="180" cy="180" r="150" fill="#2b313b"/>
+    <path d="M180 180 L180 40 A140 140 0 1 1 40 180 Z" fill="none" stroke="#f4f1ea" stroke-width="18"/>
+    <path d="M180 40 A140 140 0 0 1 320 180" fill="none" stroke="#f5b400" stroke-width="18"/>
+    <path d="M70 180 L180 180" stroke="#e23b32" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="180" cy="180" r="8" fill="#f4f1ea"/>
+    <rect x="108" y="196" width="144" height="36" rx="6" fill="#111"/>
+    <text x="180" y="222" text-anchor="middle" fill="#f6f1e6" font-size="22" font-family="ui-monospace, monospace">24578 mi</text>
+  </svg>
+  <div class="house">
+    <div class="roof"></div>
+    <div class="wall">
+      <div class="garage"></div>
+      <div class="door"></div>
+      <div class="lantern"></div>
+    </div>
+    <div class="bush" style="left:270px;width:90px"></div>
+  </div>
+  <div class="trees">
+    <div class="tree" style="left:40px;width:120px;height:160px"></div>
+    <div class="trunk" style="left:92px"></div>
+    <div class="tree" style="left:150px;width:150px;height:200px"></div>
+    <div class="trunk" style="left:216px"></div>
+    <div class="tree" style="left:280px;width:110px;height:140px"></div>
+    <div class="trunk" style="left:328px"></div>
+  </div>
+  <div class="fence">
+    <i style="left:0;height:54px"></i><i style="left:28px;height:40px"></i>
+    <i style="left:56px;height:54px"></i><i style="left:84px;height:40px"></i>
+    <i style="left:112px;height:54px"></i><i style="left:140px;height:40px"></i>
+    <i style="left:168px;height:54px"></i><i style="left:196px;height:40px"></i>
+    <i style="left:224px;height:54px"></i><i style="left:252px;height:40px"></i>
+  </div>
+  <div class="drive"></div>
+  <svg class="suv" viewBox="0 0 620 210">
+    <path d="M70 140 L120 80 H250 L310 40 H470 L530 80 H570 L590 140 V170 H70 Z" fill="#4a515c"/>
+    <path d="M250 78 L305 48 H455 L500 78 Z" fill="#d7e4ea"/>
+    <circle cx="170" cy="170" r="36" fill="#1b2433"/>
+    <circle cx="170" cy="170" r="16" fill="#c5cad1"/>
+    <circle cx="470" cy="170" r="36" fill="#1b2433"/>
+    <circle cx="470" cy="170" r="16" fill="#c5cad1"/>
+    <rect x="130" y="108" width="70" height="8" rx="3" fill="#f5b400"/>
+  </svg>
+  <div class="cards">
+    <div class="card">
+      <div class="badge red"></div>
+      <div><strong>Emissions Test</strong><em class="due-red">Due in 12 days</em><time>Jun 5, 2025</time></div>
+    </div>
+    <div class="card">
+      <div class="badge slate"></div>
+      <div><strong>Registration</strong><em class="due-slate">Due in 28 days</em><time>Jun 21, 2025</time></div>
+    </div>
+    <div class="card">
+      <div class="badge gold"></div>
+      <div><strong>Oil Change</strong><em class="due-gold">Due in 45 days</em><time>Jul 8, 2025</time></div>
+    </div>
+    <div class="card">
+      <div class="badge green"></div>
+      <div><strong>Air Filter</strong><em class="due-green">Due in 60 days</em><time>Jul 23, 2025</time></div>
+    </div>
+  </div>
+  <svg class="appicon" viewBox="0 0 1024 1024">
+    <rect width="1024" height="1024" rx="224" fill="#2B313B"/>
+    <path fill="#F5B400" d="M512 512 L512 205 A307 307 0 0 1 729 729 Z"/>
+    <circle cx="512" cy="512" r="307" fill="none" stroke="#F6F1E6" stroke-width="56"/>
+    <circle cx="512" cy="512" r="42" fill="#F6F1E6"/>
+  </svg>
+</body>
+</html>
