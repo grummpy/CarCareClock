@@ -1,0 +1,44 @@
+# GENERIC PLACEHOLDER intervals. These are not from a Kia manual or any
+# other owner's manual. CarCareClock copies them onto each new vehicle so
+# there is something to edit. Replace every number with the schedule in the
+# manual for that car. Whichever of the mileage interval and the months
+# interval comes first is the due date.
+
+note: >
+  GENERIC PLACEHOLDER intervals, not from an owner's manual. Enter the
+  mileage and months from the manual for this vehicle. The app uses
+  whichever comes first. Clear a box to stop using that kind of interval.
+
+items:
+  - key: oil_change
+    label: Oil change
+    miles: 5000
+    months: 6
+  - key: engine_air_filter
+    label: Engine air filter
+    miles: 15000
+    months: 12
+  - key: cabin_air_filter
+    label: Cabin air filter
+    miles: 15000
+    months: 12
+  - key: tire_rotation
+    label: Tire rotation
+    miles: 7500
+    months: 6
+  - key: brake_inspection
+    label: Brake inspection
+    miles: 10000
+    months: 12
+  - key: wipers
+    label: Wipers
+    miles:
+    months: 12
+  - key: battery
+    label: Battery
+    miles:
+    months: 36
+  - key: coolant
+    label: Coolant
+    miles: 60000
+    months: 60

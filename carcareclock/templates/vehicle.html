@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicle.nickname }} · CarCareClock{% endblock %}
+{% block body %}
+<p class="back"><a href="{{ url_for('dashboard') }}">Back to the dashboard</a></p>
+<h1>{{ vehicle.nickname }}</h1>
+<p class="lede">{{ vehicle.model_year }} {{ vehicle.make }} {{ vehicle.model }} · {{ county_label(vehicle.county) }}
+  {% if vehicle.is_demo %}· fictional demo{% endif %}
+</p>
+
+<section class="panel">
+  <h2>This vehicle</h2>
+  <ul class="item-lines">
+    {% for item in items %}
+      <li class="status-{{ item.status }}">
+        <strong>{{ item.label }}</strong>
+        <span>{{ item.phrase }}{% if item.date_label %} · {{ item.date_label }}{% endif %}</span>
+        <small>{{ item.detail }}</small>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="split">
+  <form class="panel" method="post" action="{{ url_for('post_vehicle', vehicle_id=vehicle.id) }}">
+    <h2>Vehicle details</h2>
+    <label for="nickname">Nickname</label>
+    <input id="nickname" name="nickname" required value="{{ vehicle.nickname }}">
+    <label for="make">Make</label>
+    <input id="make" name="make" required value="{{ vehicle.make }}">
+    <label for="model">Model</label>
+    <input id="model" name="model" required value="{{ vehicle.model }}">
+    <label for="model_year">Model year</label>
+    <input id="model_year" name="model_year" required value="{{ vehicle.model_year }}">
+    <label for="fuel">Fuel</label>
+    <select id="fuel" name="fuel">
+      {% for fuel in fuels %}
+        <option value="{{ fuel }}" {% if vehicle.fuel == fuel %}selected{% endif %}>{{ fuel }}</option>
+      {% endfor %}
+    </select>
+    <label for="vehicle_type">Type</label>
+    <select id="vehicle_type" name="vehicle_type">
+      {% for kind in vehicle_types %}
+        <option value="{{ kind }}" {% if vehicle.vehicle_type == kind %}selected{% endif %}>{{ kind.replace('_', ' ') }}</option>
+      {% endfor %}
+    </select>
+    <label for="gvwr">GVWR in pounds, if you know it</label>
+    <input id="gvwr" name="gvwr" value="{{ vehicle.gvwr or '' }}">
+    <label for="ownership">Ownership for the VEIP new-vehicle rule</label>
+    <select id="ownership" name="ownership">
+      {% for key, label in ownership %}
+        <option value="{{ key }}" {% if vehicle.ownership == key %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <label for="title_date">Title date</label>
+    <input id="title_date" name="title_date" type="date" value="{{ vehicle.title_date or '' }}">
+    <label for="county">Registration county</label>
+    <input id="county" name="county" required value="{{ vehicle.county }}">
+    <button type="submit">Save vehicle</button>
+  </form>
+
+  <form class="panel" method="post" action="{{ url_for('post_compliance', vehicle_id=vehicle.id) }}">
+    <h2>Emissions and registration</h2>
+    <p class="hint">Leave the emissions due date blank to let the rules file estimate it from the last test, or from the new-vehicle anchor. A date you type here is the one reminders use.</p>
+    <label for="veip_last">Last emissions test</label>
+    <input id="veip_last" name="veip_last" type="date" value="{{ compliance.veip.last_completed if compliance.veip else '' }}">
+    <label for="veip_due">Emissions due date from your notice</label>
+    <input id="veip_due" name="veip_due" type="date" value="{{ compliance.veip.next_due if compliance.veip and compliance.veip.next_due else '' }}">
+    <label for="registration_due">Registration expiration on the card</label>
+    <input id="registration_due" name="registration_due" type="date" value="{{ compliance.registration.next_due if compliance.registration else '' }}">
+    <label for="period_years">Registration period</label>
+    <select id="period_years" name="period_years">
+      {% for years in periods %}
+        <option value="{{ years }}" {% if compliance.registration and compliance.registration.period_years == years %}selected{% endif %}>
+          {{ years }} year{% if years != 1 %}s{% endif %}{% if years not in primary_periods %} (also offered){% endif %}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit">Save dates</button>
+  </form>
+</section>
+
+<form class="panel" method="post" action="{{ url_for('post_intervals', vehicle_id=vehicle.id) }}">
+  <h2>Maintenance intervals for this vehicle</h2>
+  <p class="hint">{{ generic_note }}</p>
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Item</th><th>Miles</th><th>Months</th></tr>
+    </thead>
+    <tbody>
+      {% for row in intervals %}
+        <tr>
+          <th>
+            {{ labels.get(row.item_key, row.item_key) }}
+            <input type="hidden" name="item_key" value="{{ row.item_key }}">
+          </th>
+          <td><input name="miles_{{ row.item_key }}" inputmode="numeric" value="{{ row.miles if row.miles is not none else '' }}" aria-label="{{ row.item_key }} miles"></td>
+          <td><input name="months_{{ row.item_key }}" inputmode="numeric" value="{{ row.months if row.months is not none else '' }}" aria-label="{{ row.item_key }} months"></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <button type="submit">Save intervals</button>
+</form>
+
+<section class="split">
+  <form class="panel" method="post" action="{{ url_for('post_service', vehicle_id=vehicle.id) }}">
+    <h2>Log a service</h2>
+    <label for="service_date">Date</label>
+    <input id="service_date" name="service_date" type="date" required value="{{ today }}">
+    <label for="item_key">Item</label>
+    <select id="item_key" name="item_key">
+      <option value="">General note</option>
+      {% for key in item_keys %}
+        <option value="{{ key }}">{{ labels.get(key, key) }}</option>
+      {% endfor %}
+    </select>
+    <label for="service-mileage">Mileage</label>
+    <input id="service-mileage" name="mileage" inputmode="numeric">
+    <label for="cost">Cost in dollars</label>
+    <input id="cost" name="cost" inputmode="decimal" placeholder="89.00">
+    <label for="shop">Shop</label>
+    <input id="shop" name="shop">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" rows="3"></textarea>
+    <button type="submit">Save service</button>
+  </form>
+
+  <section class="panel">
+    <h2>Odometer</h2>
+    <ul class="plain">
+      {% for reading in readings %}
+        <li>{{ reading.reading_date }} · {{ "{:,}".format(reading.miles) }} mi</li>
+      {% else %}
+        <li>No readings yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</section>
+
+<section class="panel">
+  <h2>Service history</h2>
+  {% if services %}
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Item</th><th>Miles</th><th>Cost</th><th>Shop</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {% for row in services %}
+          <tr>
+            <td>{{ row.service_date }}</td>
+            <td>{{ labels.get(row.item_key, row.item_key or "General") }}</td>
+            <td>{% if row.mileage is not none %}{{ "{:,}".format(row.mileage) }}{% else %}—{% endif %}</td>
+            <td>{{ money(row.cost_cents) }}</td>
+            <td>{{ row.shop or "—" }}</td>
+            <td>{{ row.notes }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% else %}
+    <p class="empty">No services logged.</p>
+  {% endif %}
+</section>
+
+<form class="panel danger" method="post" action="{{ url_for('post_delete', vehicle_id=vehicle.id) }}">
+  <h2>Remove this vehicle</h2>
+  <label><input type="checkbox" name="confirm" value="yes"> Delete this vehicle and its readings from this computer</label>
+  <button type="submit">Remove</button>
+</form>
+{% endblock %}

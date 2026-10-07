@@ -1,0 +1,135 @@
+# Maryland VEIP and registration planning rules for CarCareClock.
+# Edit this file if the MVA changes a number. The app reads it on every launch.
+# This is not legal advice and it is not a substitute for the notice in myMVA.
+#
+# verify with MVA — checked 2026-10-07. See docs/SOURCES.md.
+
+verify_with_mva: >
+  Verify with MVA before you rely on a date. This file is a local summary of
+  public MVA pages, checked 2026-10-07. The notice in your myMVA account, and
+  the date printed on your registration card, control. Edit this file if a rule
+  changes. CarCareClock is not the MVA and not legal advice.
+
+checked_on: 2026-10-07
+
+veip:
+  # Used vehicles, and any vehicle after its first test: every 2 years.
+  cycle_months: 24
+  new_vehicle:
+    model_year_min: 2019
+    exempt_months: 72
+    # The live emissions page says the first test is "72 months from the model
+    # year". The exemptions page says "72 months after the model year". A FAQ
+    # line also says "72 months from time of titling/registration".
+    # model_year_start = January 1 of the model year.
+    # title_date = the title date stored on the vehicle.
+    # Switch the anchor if myMVA shows the other one. VERIFY WITH MVA.
+    anchor: model_year_start
+    qualifying_ownership:
+      - original_maryland
+      - lease_buyout_original_lessee
+  notice:
+    # Email: 8 weeks before the due date.
+    # Mail, when no email is on file: approximately 6 to 8 weeks before.
+    email_weeks_before_due: 8
+    mail_weeks_before_due_min: 6
+    mail_weeks_before_due_max: 8
+  late_fee:
+    amount_usd: 30
+    # Assessed the day after the due date, then again every 28 days.
+    assessed: day_after_due_date
+    repeat_every_days: 28
+  test_fee_station_usd: 30
+  test_fee_kiosk_usd: 26
+  # Current emissions FAQ: a used-vehicle buyer is sent a test notice four
+  # months after registration. The app does NOT treat that as the due date
+  # unless you set the flag below. Enter the date from the notice.
+  used_purchase_notice_months: 4
+  apply_used_purchase_notice_as_due_date: false
+  counties:
+    - Anne Arundel
+    - Baltimore City
+    - Baltimore
+    - Calvert
+    - Carroll
+    - Cecil
+    - Charles
+    - Frederick
+    - Harford
+    - Howard
+    - Montgomery
+    - Prince George's
+    - Queen Anne's
+    - Washington
+  # Hybrids are tested. A new qualified hybrid still gets the 72-month window
+  # above. After that window, a hybrid is not exempt.
+  hybrids_required_after_new_vehicle_window: true
+  exemptions:
+    - id: model_year_1995_or_older_under_8500
+      description: "1995 or older and under 8,500 lb GVWR"
+      model_year_on_or_before: 1995
+      gvwr_under: 8500
+    - id: gvwr_over_26000
+      description: "More than 26,000 lb GVWR"
+      gvwr_over: 26000
+    - id: diesel_only
+      description: "Powered solely by diesel"
+      fuel: diesel
+    - id: electric_only
+      description: "Powered solely by electric"
+      fuel: electric
+    - id: motorcycle
+      description: Motorcycle
+      vehicle_type: motorcycle
+    - id: farm
+      description: "Farm truck, farm truck tractor, or farm area vehicle"
+      vehicle_type: farm
+    - id: historic
+      description: Historic or antique
+      vehicle_type: historic
+    - id: fire_apparatus
+      description: Fire apparatus owned or leased by a public or volunteer fire service
+      vehicle_type: fire_apparatus
+    - id: ambulance
+      description: Ambulance
+      vehicle_type: ambulance
+    - id: street_rod
+      description: Class N street rod
+      vehicle_type: street_rod
+    - id: military_tactical
+      description: Federal tactical, combat, relief, or training military vehicle
+      vehicle_type: military_tactical
+    - id: school_or_passenger_bus
+      description: Class H school vehicle or Class P passenger bus
+      vehicle_type:
+        - school_bus
+        - passenger_bus
+
+registration:
+  # The title-and-registration overview says registration is renewed every one
+  # or two years. The renew-registration page also offers a three-year period.
+  # Both are recorded. One- and two-year are the primary periods.
+  periods_years: [1, 2]
+  also_offered_years: [3]
+  default_period_years: 2
+  # You may renew 90 days before the expiration date.
+  early_renew_days_before_expiration: 90
+  # Planning uses the expiration date you type from the card.
+  # COMAR 11.15.16.03: the registration expires at midnight on the date on the card.
+  # COMAR 11.15.16.05.B: renewals are due on or before the last day of the month
+  # stated on the card. The month-end date is shown beside the card date.
+  # card_date | last_day_of_month_on_card
+  planning_deadline: card_date
+  notice:
+    # The live renew page does not publish a fixed "notice is mailed N days
+    # before" number. It says the MVA sends a renewal notice when it is time.
+    # Leave this null. Do not invent a lead time.
+    published_lead_time_days: null
+    statement: "The MVA will send you a renewal notice when it's time."
+    # Renewal instruction sheets say a mailed renewal must reach the MVA no
+    # later than 15 days before expiration. That is a mail-processing deadline,
+    # not proof of when the notice is sent. The live renew page does not repeat it.
+    mail_must_arrive_days_before_expiration: 15
+    # Not the renewal notice. Flag emails go out about 70 days before expiration
+    # so flags can be cleared. Recorded here so it is not confused with the notice.
+    flag_email_days_before_expiration: 70

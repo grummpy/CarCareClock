@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Service history · CarCareClock{% endblock %}
+{% block body %}
+<h1>Service history</h1>
+<p class="lede">Date, mileage, cost, shop, and notes for every car in the local database.</p>
+{% if services %}
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Vehicle</th><th>Item</th><th>Miles</th><th>Cost</th><th>Shop</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {% for row in services %}
+        <tr>
+          <td>{{ row.service_date }}</td>
+          <td><a href="{{ url_for('vehicle', vehicle_id=row.vehicle_id) }}">{{ row.nickname }}</a></td>
+          <td>{{ labels.get(row.item_key, row.item_key or "General") }}</td>
+          <td>{% if row.mileage is not none %}{{ "{:,}".format(row.mileage) }}{% else %}—{% endif %}</td>
+          <td>{{ money(row.cost_cents) }}</td>
+          <td>{{ row.shop or "—" }}</td>
+          <td>{{ row.notes }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% else %}
+  <p class="empty">No services yet.</p>
+{% endif %}
+{% endblock %}

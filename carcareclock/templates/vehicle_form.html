@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Add a vehicle · CarCareClock{% endblock %}
+{% block body %}
+<h1>Add a vehicle</h1>
+<p class="lede">Do not enter a VIN or a license plate. This app does not have a place for either.</p>
+<form class="panel narrow" method="post" action="{{ url_for('post_new_vehicle') }}">
+  <label for="nickname">Nickname</label>
+  <input id="nickname" name="nickname" required placeholder="Weekend Kia">
+  <label for="make">Make</label>
+  <input id="make" name="make" required>
+  <label for="model">Model</label>
+  <input id="model" name="model" required>
+  <label for="model_year">Model year</label>
+  <input id="model_year" name="model_year" required inputmode="numeric">
+  <label for="fuel">Fuel</label>
+  <select id="fuel" name="fuel">
+    {% for fuel in fuels %}<option value="{{ fuel }}">{{ fuel }}</option>{% endfor %}
+  </select>
+  <label for="vehicle_type">Type</label>
+  <select id="vehicle_type" name="vehicle_type">
+    {% for kind in vehicle_types %}<option value="{{ kind }}">{{ kind.replace('_', ' ') }}</option>{% endfor %}
+  </select>
+  <label for="gvwr">GVWR in pounds, if you know it</label>
+  <input id="gvwr" name="gvwr">
+  <label for="ownership">Ownership</label>
+  <select id="ownership" name="ownership">
+    {% for key, label in ownership %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+  </select>
+  <label for="title_date">Title date</label>
+  <input id="title_date" name="title_date" type="date">
+  <label for="county">Registration county</label>
+  <input id="county" name="county" required value="Prince George's">
+  <label for="registration_due">Registration expiration on the card</label>
+  <input id="registration_due" name="registration_due" type="date">
+  <label for="period_years">Registration period</label>
+  <select id="period_years" name="period_years">
+    {% for years in periods %}
+      <option value="{{ years }}" {% if years == default_period %}selected{% endif %}>{{ years }} year{% if years != 1 %}s{% endif %}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Add vehicle</button>
+</form>
+{% endblock %}

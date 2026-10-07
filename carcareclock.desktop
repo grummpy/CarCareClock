@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CarCareClock
+GenericName=Car maintenance tracker
+Comment=Track Maryland VEIP, registration, and maintenance on this computer
+Exec=bash -c 'cd "$(dirname "%k")" && exec ./launch.sh'
+Icon=assets/icon.png
+Terminal=true
+Categories=Utility;
+StartupNotify=true

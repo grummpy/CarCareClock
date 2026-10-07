@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Rules · CarCareClock{% endblock %}
+{% block body %}
+<h1>Rules on this computer</h1>
+<div class="callout">{{ rules.verify_with_mva }}</div>
+<p class="lede">Checked {{ rules.checked_on }}. Edit <code>rules/maryland.yaml</code> and <code>rules/maintenance_defaults.yaml</code>, then restart the app. Sources and the disagreements between MVA pages are in <code>docs/SOURCES.md</code>.</p>
+
+<section class="panel">
+  <h2>VEIP</h2>
+  <ul class="plain">
+    <li>Cycle after a test: {{ rules.veip_cycle_months }} months.</li>
+    <li>New vehicle, model year {{ rules.new_model_year_min }} or newer, qualifying ownership: first test {{ rules.new_exempt_months }} months from {{ rules.new_anchor.replace('_', ' ') }}.</li>
+    <li>Email notice {{ rules.email_weeks_before_due }} weeks before the due date. Mail notice about {{ rules.mail_weeks_before_due_min }} to {{ rules.mail_weeks_before_due_max }} weeks before.</li>
+    <li>Late fee ${{ rules.late_fee_usd }}, the day after the due date, then every {{ rules.late_fee_repeat_days }} days.</li>
+    <li>Station test ${{ rules.test_fee_station_usd }}. Kiosk ${{ rules.test_fee_kiosk_usd }}.</li>
+    <li>Used-purchase notice figure: {{ rules.used_purchase_notice_months }} months. Applied as a due date: {{ "yes" if rules.apply_used_purchase_notice_as_due_date else "no" }}.</li>
+    <li>Counties: {{ rules.counties | join(", ") }}.</li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Registration</h2>
+  <ul class="plain">
+    <li>Primary periods: {{ rules.registration_periods_years | join(" and ") }} years. Also offered: {{ rules.registration_also_offered_years | join(", ") }}.</li>
+    <li>Early renewal opens {{ rules.early_renew_days }} days before the card date.</li>
+    <li>Published notice lead time: {{ rules.registration_notice_lead_days if rules.registration_notice_lead_days is not none else "not stated" }}.</li>
+    <li>{{ rules.registration_notice_statement }}</li>
+    <li>Mail-arrival deadline stored in the file: {{ rules.mail_must_arrive_days }} days before expiration.</li>
+    <li>Flag email, which is not the renewal notice: {{ rules.flag_email_days }} days before expiration.</li>
+    <li>Planning deadline mode: {{ rules.planning_deadline }}.</li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Generic maintenance placeholders</h2>
+  <p>{{ defaults.note }}</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Item</th><th>Miles</th><th>Months</th></tr></thead>
+    <tbody>
+      {% for item in defaults.items %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td>{{ item.miles if item.miles is not none else "—" }}</td>
+          <td>{{ item.months if item.months is not none else "—" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}
