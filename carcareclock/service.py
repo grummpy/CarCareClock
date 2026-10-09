@@ -366,6 +366,16 @@ def log_mileage(
     ).fetchone()
     if previous and miles < int(previous["miles"]):
         raise ValueError("That reading is lower than an earlier reading on or before that date.")
+    following = conn.execute(
+        """
+        SELECT miles FROM odometer
+        WHERE vehicle_id = ? AND reading_date > ?
+        ORDER BY reading_date ASC, id ASC LIMIT 1
+        """,
+        (vehicle_id, iso(reading_date)),
+    ).fetchone()
+    if following and miles > int(following["miles"]):
+        raise ValueError("That reading is higher than a later reading.")
     conn.execute(
         "INSERT INTO odometer (vehicle_id, reading_date, miles, notes) VALUES (?, ?, ?, ?)",
         (vehicle_id, iso(reading_date), miles, notes.strip()[:500]),
