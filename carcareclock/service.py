@@ -16,6 +16,7 @@ from carcareclock.schedule import (
     assess_veip,
     due_phrase,
     format_long_date,
+    in_reminder_window,
     miles_per_day,
     reminder_status,
     whichever_comes_first,
@@ -147,7 +148,11 @@ def items_for_vehicle(
     if not veip.required:
         status = "not_required"
         phrase = "Not required"
-    elif veip.exempt and veip.due_source != "notice":
+    elif (
+        veip.exempt
+        and veip.due_source != "notice"
+        and not in_reminder_window(veip.due, today, window_days)
+    ):
         status = "exempt"
         phrase = "Exempt for now" if veip.due else "Exempt"
     else:

@@ -5,7 +5,8 @@ from pathlib import Path
 
 import yaml
 
-from carcareclock.rules import load_rules
+from carcareclock.db import connect, init_db
+from carcareclock.rules import load_defaults, load_rules
 from carcareclock.schedule import (
     add_years,
     assess_registration,
@@ -14,6 +15,7 @@ from carcareclock.schedule import (
     veip_late_fee_usd,
     veip_notice_window,
 )
+from carcareclock.service import calendar_items, items_for_vehicle
 
 ROOT = Path(__file__).resolve().parents[1]
 RULES = ROOT / "rules" / "maryland.yaml"
@@ -88,6 +90,46 @@ def test_cycle_and_new_vehicle_window_follow_the_yaml(tmp_path: Path):
     retitled = assess_veip(new, custom, date(2024, 1, 1))
     assert retitled.first_test == date(2025, 6, 15)
     assert retitled.due_source == "new_vehicle_anchor"
+
+
+def test_estimated_first_veip_is_visible_during_the_reminder_window(tmp_path: Path):
+    rules = load_rules(RULES)
+    defaults = load_defaults(ROOT / "rules" / "maintenance_defaults.yaml")
+    conn = connect(tmp_path / "synthetic.sqlite")
+    init_db(conn)
+    conn.execute(
+        """
+        INSERT INTO vehicles (
+            nickname, make, model, model_year, fuel, vehicle_type, gvwr,
+            ownership, title_date, county, is_demo, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "Synthetic new vehicle",
+            "Example",
+            "Model",
+            2022,
+            "gasoline",
+            "passenger",
+            4000,
+            "original_maryland",
+            None,
+            "Prince George's",
+            1,
+            "2026-01-01",
+        ),
+    )
+    conn.commit()
+    vehicle = conn.execute("SELECT * FROM vehicles").fetchone()
+    due = date(2028, 1, 1)
+    views = items_for_vehicle(conn, vehicle, rules, defaults, due - timedelta(days=7), 7)
+    veip = next(item for item in views if item.key == "veip")
+    assert veip.status == "due_soon"
+    assert "Estimated first test" in veip.detail
+    assert calendar_items([veip], due - timedelta(days=7), "Verify with MVA.")
+    before = items_for_vehicle(conn, vehicle, rules, defaults, due - timedelta(days=8), 7)
+    assert next(item for item in before if item.key == "veip").status == "exempt"
+    conn.close()
 
 
 def test_exemptions_and_county_come_from_the_yaml():
