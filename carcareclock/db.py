@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS intervals (
     item_key TEXT NOT NULL,
     miles INTEGER,
     months INTEGER,
+    source_reference TEXT NOT NULL DEFAULT '',
+    service_profile TEXT NOT NULL DEFAULT 'unverified',
+    guidance_checked_on TEXT NOT NULL DEFAULT '',
     PRIMARY KEY (vehicle_id, item_key)
 );
 
@@ -79,6 +82,16 @@ def connect(path: Path) -> sqlite3.Connection:
 
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
+    # Existing local databases predate interval provenance. SQLite cannot add
+    # multiple columns in one ALTER, so upgrade each missing column in place.
+    interval_columns = table_columns(conn, "intervals")
+    for column, definition in (
+        ("source_reference", "TEXT NOT NULL DEFAULT ''"),
+        ("service_profile", "TEXT NOT NULL DEFAULT 'unverified'"),
+        ("guidance_checked_on", "TEXT NOT NULL DEFAULT ''"),
+    ):
+        if column not in interval_columns:
+            conn.execute(f"ALTER TABLE intervals ADD COLUMN {column} {definition}")
     conn.execute(
         "INSERT OR IGNORE INTO settings (key, value) VALUES ('reminder_window_days', '7')"
     )

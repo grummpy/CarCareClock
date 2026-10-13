@@ -229,7 +229,10 @@ def items_for_vehicle(
     stored = {
         row["item_key"]: row
         for row in conn.execute(
-            "SELECT item_key, miles, months FROM intervals WHERE vehicle_id = ?",
+            """
+            SELECT item_key, miles, months, source_reference, service_profile, guidance_checked_on
+            FROM intervals WHERE vehicle_id = ?
+            """,
             (vehicle["id"],),
         ).fetchall()
     }
@@ -261,6 +264,29 @@ def items_for_vehicle(
             result.reason or "", ""
         )
         detail = f"Whichever comes first. Next limit: {reason}." if reason else "No service logged yet."
+        if result.mileage_projection_state == "stale":
+            detail += (
+                f" Mileage projection omitted: the latest reading is {result.mileage_reading_age_days} days old; "
+                "log a current reading before treating mileage as a date estimate."
+            )
+        elif result.mileage_projection_state == "zero_use":
+            detail += (
+                " Mileage projection omitted: recent readings show zero use, "
+                "so no precise future date is estimated."
+            )
+        elif result.mileage_projection_state in {"insufficient", "missing"}:
+            detail += " Mileage projection needs at least two usable readings."
+        source = str(row["source_reference"] or "").strip()
+        profile = str(row["service_profile"] or "unverified")
+        checked = str(row["guidance_checked_on"] or "").strip()
+        if source:
+            detail += f" Interval reference: {source}."
+        else:
+            detail += " Interval reference: unverified generic placeholder; not manufacturer or government guidance."
+        if profile in {"normal", "severe"}:
+            detail += f" Service profile: {profile}."
+        if checked:
+            detail += f" Guidance checked: {checked}."
         views.append(
             ItemView(
                 vehicle_id=vehicle["id"],
@@ -618,20 +644,32 @@ def get_vehicle(conn: sqlite3.Connection, vehicle_id: int) -> sqlite3.Row | None
 def save_intervals(
     conn: sqlite3.Connection,
     vehicle_id: int,
-    rows: list[tuple[str, int | None, int | None]],
+    rows: list[tuple[str, int | None, int | None, str, str, str]],
 ) -> None:
-    for key, miles, months in rows:
+    allowed_profiles = {"unverified", "normal", "severe"}
+    for key, miles, months, source_reference, service_profile, guidance_checked_on in rows:
         if miles is not None and miles < 0:
             raise ValueError("Miles interval cannot be negative.")
         if months is not None and months < 0:
             raise ValueError("Months interval cannot be negative.")
+        source_reference = source_reference.strip()[:300]
+        if service_profile not in allowed_profiles:
+            raise ValueError("Service profile must be unverified, normal, or severe.")
+        if guidance_checked_on:
+            date.fromisoformat(guidance_checked_on)
         conn.execute(
             """
-            INSERT INTO intervals (vehicle_id, item_key, miles, months) VALUES (?, ?, ?, ?)
+            INSERT INTO intervals (
+                vehicle_id, item_key, miles, months, source_reference, service_profile, guidance_checked_on
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(vehicle_id, item_key) DO UPDATE SET
-                miles = excluded.miles, months = excluded.months
+                miles = excluded.miles,
+                months = excluded.months,
+                source_reference = excluded.source_reference,
+                service_profile = excluded.service_profile,
+                guidance_checked_on = excluded.guidance_checked_on
             """,
-            (vehicle_id, key, miles, months),
+            (vehicle_id, key, miles, months, source_reference, service_profile, guidance_checked_on),
         )
     conn.commit()
 

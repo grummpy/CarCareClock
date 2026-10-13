@@ -107,6 +107,33 @@ def test_mileage_without_a_rate_needs_readings():
     assert result.needs_readings
 
 
+def test_stale_or_zero_use_mileage_never_creates_a_precise_future_date():
+    stale = whichever_comes_first(
+        last_date=None,
+        last_miles=1000,
+        months_interval=None,
+        miles_interval=500,
+        readings=[(date(2026, 1, 1), 1000), (date(2026, 1, 11), 1100)],
+        today=date(2026, 3, 1),
+    )
+    assert stale.due is None
+    assert stale.needs_readings
+    assert stale.mileage_projection_state == "stale"
+    assert stale.mileage_reading_age_days == 49
+
+    zero_use = whichever_comes_first(
+        last_date=None,
+        last_miles=1000,
+        months_interval=None,
+        miles_interval=500,
+        readings=[(date(2026, 3, 1), 1000), (date(2026, 3, 11), 1000)],
+        today=date(2026, 3, 11),
+    )
+    assert zero_use.due is None
+    assert zero_use.needs_readings
+    assert zero_use.mileage_projection_state == "zero_use"
+
+
 def test_projection_uses_calendar_days_across_the_dst_change():
     # US clocks spring forward on 2026-03-08. One calendar day is still one day.
     anchor = date(2026, 3, 7)

@@ -86,7 +86,7 @@
   <div class="table-wrap">
   <table>
     <thead>
-      <tr><th>Item</th><th>Miles</th><th>Months</th></tr>
+      <tr><th>Item</th><th>Miles</th><th>Months</th><th>Service profile</th><th>Manual/reference</th><th>Checked</th></tr>
     </thead>
     <tbody>
       {% for row in intervals %}
@@ -97,6 +97,15 @@
           </th>
           <td><input name="miles_{{ row.item_key }}" inputmode="numeric" value="{{ row.miles if row.miles is not none else '' }}" aria-label="{{ row.item_key }} miles"></td>
           <td><input name="months_{{ row.item_key }}" inputmode="numeric" value="{{ row.months if row.months is not none else '' }}" aria-label="{{ row.item_key }} months"></td>
+          <td>
+            <select name="service_profile_{{ row.item_key }}" aria-label="{{ row.item_key }} service profile">
+              <option value="unverified" {% if row.service_profile == "unverified" %}selected{% endif %}>Unverified default</option>
+              <option value="normal" {% if row.service_profile == "normal" %}selected{% endif %}>Normal service</option>
+              <option value="severe" {% if row.service_profile == "severe" %}selected{% endif %}>Severe service</option>
+            </select>
+          </td>
+          <td><input name="source_reference_{{ row.item_key }}" value="{{ row.source_reference }}" maxlength="300" aria-label="{{ row.item_key }} manual or reference"></td>
+          <td><input name="guidance_checked_on_{{ row.item_key }}" type="date" value="{{ row.guidance_checked_on }}" aria-label="{{ row.item_key }} guidance checked date"></td>
         </tr>
       {% endfor %}
     </tbody>

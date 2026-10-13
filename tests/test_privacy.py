@@ -34,3 +34,28 @@ def test_data_folder_is_gitignored():
     assert "data/" in text
     defaults = (ROOT / "rules" / "maintenance_defaults.yaml").read_text(encoding="utf-8")
     assert "GENERIC PLACEHOLDER" in defaults
+
+
+def test_existing_local_database_gains_interval_provenance_columns(tmp_path: Path):
+    path = tmp_path / "legacy.sqlite"
+    legacy = connect(path)
+    legacy.execute(
+        """
+        CREATE TABLE intervals (
+            vehicle_id INTEGER NOT NULL,
+            item_key TEXT NOT NULL,
+            miles INTEGER,
+            months INTEGER,
+            PRIMARY KEY (vehicle_id, item_key)
+        )
+        """
+    )
+    legacy.execute("INSERT INTO intervals (vehicle_id, item_key, miles, months) VALUES (1, 'oil_change', 5000, 6)")
+    legacy.commit()
+    init_db(legacy)
+    assert {"source_reference", "service_profile", "guidance_checked_on"} <= table_columns(legacy, "intervals")
+    row = legacy.execute("SELECT * FROM intervals WHERE vehicle_id = 1").fetchone()
+    assert row["source_reference"] == ""
+    assert row["service_profile"] == "unverified"
+    assert row["guidance_checked_on"] == ""
+    legacy.close()

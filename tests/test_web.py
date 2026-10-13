@@ -69,11 +69,23 @@ def test_interval_edit_is_per_vehicle(tmp_path: Path):
             "item_key": "oil_change",
             "miles_oil_change": "3000",
             "months_oil_change": "4",
+            "service_profile_oil_change": "normal",
+            "source_reference_oil_change": "Synthetic owner manual, 2025 edition, page 11",
+            "guidance_checked_on_oil_change": "2026-10-13",
         },
         follow_redirects=True,
     )
     assert b"3000" in saved.data
+    assert b"Normal service" in saved.data
+    assert b"Synthetic owner manual, 2025 edition, page 11" in saved.data
     other = client.get("/vehicle/2")
     assert b'name="miles_oil_change"' in other.data
     # The second vehicle still has the generic placeholder, not the edited 3000.
     assert b"value=\"3000\"" not in other.data
+
+
+def test_unverified_default_is_not_described_as_manufacturer_or_government_guidance(tmp_path: Path):
+    client = _client(tmp_path)
+    page = client.get("/vehicle/1")
+    assert b"Unverified default" in page.data
+    assert b"Interval reference: unverified generic placeholder; not manufacturer or government guidance." in page.data
