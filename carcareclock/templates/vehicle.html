@@ -14,6 +14,7 @@
       <li class="status-{{ item.status }}">
         <strong>{{ item.label }}</strong>
         <span>{{ item.phrase }}{% if item.date_label %} · {{ item.date_label }}{% endif %}</span>
+        <small class="date-basis">{{ item.date_basis }}</small>
         <small>{{ item.detail }}</small>
       </li>
     {% endfor %}

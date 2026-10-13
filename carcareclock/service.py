@@ -36,6 +36,7 @@ class ItemView:
     status: str
     phrase: str
     date_label: str
+    date_basis: str
     detail: str
     tone: str
 
@@ -47,8 +48,8 @@ class ItemView:
             extra = " " + verify
         return CalendarItem(
             uid=f"carcareclock-{self.vehicle_id}-{self.key}-{self.due.isoformat()}@local",
-            summary=f"{self.label} — {self.vehicle_name}",
-            description=(self.detail + extra).strip(),
+            summary=f"{self.label} — {self.vehicle_name} ({self.date_basis})",
+            description=(f"Date basis: {self.date_basis}. {self.detail}" + extra).strip(),
             due=self.due,
         )
 
@@ -159,6 +160,13 @@ def items_for_vehicle(
         status = reminder_status(veip.due, today, window_days)
         phrase = due_phrase(veip.due, today)
     detail = veip.detail
+    veip_date_basis = {
+        "notice": "Date from your MVA notice",
+        "cycle": "Estimate from the last completed test",
+        "new_vehicle_anchor": "Estimate from the new-vehicle rule",
+        "used_purchase_notice": "Planning date from the rules file",
+        "missing": "No due date from an MVA notice",
+    }.get(veip.due_source, "Date basis unavailable")
     if veip.notice is not None:
         detail += (
             f" Email notice about {format_long_date(veip.notice.email_on)}"
@@ -178,6 +186,7 @@ def items_for_vehicle(
             status=status,
             phrase=phrase,
             date_label=format_long_date(veip.due) if veip.due else "",
+            date_basis=veip_date_basis,
             detail=detail,
             tone=_tone("veip", status),
         )
@@ -189,6 +198,7 @@ def items_for_vehicle(
     registration = assess_registration(card, period, rules)
     status = reminder_status(registration.planning_due, today, window_days)
     detail = registration.detail
+    registration_date_basis = "Registration card date" if registration.planning_due else "No registration card date"
     if registration.early_renew_opens:
         detail += (
             f" Renewal opens {format_long_date(registration.early_renew_opens)}"
@@ -210,6 +220,7 @@ def items_for_vehicle(
             status=status,
             phrase=due_phrase(registration.planning_due, today),
             date_label=format_long_date(registration.planning_due) if registration.planning_due else "",
+            date_basis=registration_date_basis,
             detail=detail,
             tone=_tone("registration", status),
         )
@@ -260,6 +271,7 @@ def items_for_vehicle(
                 status=status,
                 phrase=phrase,
                 date_label=format_long_date(result.due) if result.due else "",
+                date_basis="Maintenance estimate from the saved interval",
                 detail=detail,
                 tone=_tone(key, status),
             )
@@ -288,7 +300,10 @@ def reminder_lines(items: list[ItemView]) -> list[str]:
         if item.status not in {"overdue", "due_soon"}:
             continue
         when = item.date_label or "no date"
-        lines.append(f"{item.vehicle_name}: {item.label} {item.phrase.lower()} ({when}).")
+        lines.append(
+            f"{item.vehicle_name}: {item.label} {item.phrase.lower()} "
+            f"({when}; {item.date_basis})."
+        )
     return lines
 
 

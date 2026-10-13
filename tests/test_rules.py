@@ -15,7 +15,8 @@ from carcareclock.schedule import (
     veip_late_fee_usd,
     veip_notice_window,
 )
-from carcareclock.service import calendar_items, items_for_vehicle
+from carcareclock.ics_export import build_calendar
+from carcareclock.service import calendar_items, items_for_vehicle, reminder_lines
 
 ROOT = Path(__file__).resolve().parents[1]
 RULES = ROOT / "rules" / "maryland.yaml"
@@ -126,9 +127,57 @@ def test_estimated_first_veip_is_visible_during_the_reminder_window(tmp_path: Pa
     veip = next(item for item in views if item.key == "veip")
     assert veip.status == "due_soon"
     assert "Estimated first test" in veip.detail
+    assert veip.date_basis == "Estimate from the new-vehicle rule"
     assert calendar_items([veip], due - timedelta(days=7), "Verify with MVA.")
     before = items_for_vehicle(conn, vehicle, rules, defaults, due - timedelta(days=8), 7)
     assert next(item for item in before if item.key == "veip").status == "exempt"
+    conn.close()
+
+
+def test_notice_estimate_and_missing_veip_dates_remain_distinct_in_reminders_and_ics(tmp_path: Path):
+    """Never turn an estimate into an official notice date in any output."""
+    rules = load_rules(RULES)
+    defaults = load_defaults(ROOT / "rules" / "maintenance_defaults.yaml")
+    conn = connect(tmp_path / "synthetic.sqlite")
+    init_db(conn)
+    for nickname, ownership, title_date in (
+        ("Notice", "used", None),
+        ("Estimate", "original_maryland", "2022-01-01"),
+        ("Missing", "used", None),
+    ):
+        conn.execute(
+            """
+            INSERT INTO vehicles (
+                nickname, make, model, model_year, fuel, vehicle_type, gvwr,
+                ownership, title_date, county, is_demo, created_at
+            ) VALUES (?, 'Example', 'Model', 2022, 'gasoline', 'passenger', 4000,
+                      ?, ?, 'Prince George''s', 1, '2026-01-01')
+            """,
+            (nickname, ownership, title_date),
+        )
+    conn.execute(
+        "INSERT INTO compliance (vehicle_id, kind, next_due) VALUES (1, 'veip', '2028-01-05')"
+    )
+    conn.commit()
+
+    views = []
+    for vehicle in conn.execute("SELECT * FROM vehicles ORDER BY id").fetchall():
+        views.append(next(item for item in items_for_vehicle(conn, vehicle, rules, defaults, date(2027, 12, 29), 7) if item.key == "veip"))
+
+    notice, estimate, missing = views
+    assert notice.date_basis == "Date from your MVA notice"
+    assert estimate.date_basis == "Estimate from the new-vehicle rule"
+    assert missing.due is None
+    assert missing.date_basis == "No due date from an MVA notice"
+
+    reminder_text = "\n".join(reminder_lines(views))
+    assert "Date from your MVA notice" in reminder_text
+    assert "Estimate from the new-vehicle rule" in reminder_text
+    exported = calendar_items(views, date(2027, 12, 29), "Verify with MVA.")
+    ics = build_calendar(exported).decode("utf-8")
+    assert "Date basis: Date from your MVA notice." in ics
+    assert "Date basis: Estimate from the new-vehicle rule." in ics
+    assert "No due date from an MVA notice" not in ics
     conn.close()
 
 
