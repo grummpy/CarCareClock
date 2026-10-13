@@ -131,7 +131,10 @@ def cmd_status() -> int:
         conn.close()
     for item in items:
         when = item.date_label or "no date"
-        print(f"{item.vehicle_name}\t{item.label}\t{item.status}\t{when}\t{item.phrase}")
+        print(
+            f"{item.vehicle_name}\t{item.label}\t{item.status}\t{when}\t"
+            f"{item.date_basis}\t{item.phrase}"
+        )
     return 0
 
 
