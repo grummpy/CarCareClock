@@ -87,7 +87,8 @@ h2 { margin: 0 0 12px; }
   gap: 2px;
 }
 .chip strong { font-size: 0.92rem; }
-.chip em, .chip time { font-style: normal; color: var(--muted); font-size: 0.85rem; }
+.chip em, .chip time, .date-basis { font-style: normal; color: var(--muted); font-size: 0.85rem; }
+.date-basis { display: block; }
 .chip-icon {
   width: 36px;
   height: 36px;

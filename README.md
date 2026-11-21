@@ -25,7 +25,7 @@ A fictional Demo Kia and a fictional Demo Electric are created the first time th
 - See a due-soon timeline, and a reminder list of everything overdue or due within 7 days. Change that window on the dashboard.
 - Log an odometer reading. The app estimates miles per day from recent readings and projects a date for mileage-based maintenance.
 - Log a service with date, mileage, cost, shop, and notes. The latest service for an item is the start of the next interval.
-- Edit each vehicle's intervals. New vehicles start from generic placeholders in `rules/maintenance_defaults.yaml`. Replace them with the owner's manual. Whichever of the mileage interval and the months interval comes first is the due date.
+- Edit each vehicle's intervals. New vehicles start from generic placeholders in `rules/maintenance_defaults.yaml`; they are not manufacturer or government guidance. Record an owner's-manual/reference, whether normal or severe service applies, and when you checked it. Whichever of the mileage interval and the months interval comes first is the due date. Mileage dates are withheld when the latest reading is stale or recent readings show zero use.
 - Edit `rules/maryland.yaml` if the MVA changes a number. The planner reads that file. It is not hardcoded. Verify with MVA before you rely on a date. The research notes, URLs, and the date they were checked are in [docs/SOURCES.md](docs/SOURCES.md).
 - Export `carcareclock.ics` from the header. Events are in `America/New_York` at 9:00, with a display alarm the same number of days ahead as the reminder window (7 by default), so you can subscribe from Google Calendar.
 - Desktop notification when the app starts, and when you run `python -m carcareclock check`.

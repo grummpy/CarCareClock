@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 from carcareclock.rules import MarylandRules
 
 NEW_YORK = ZoneInfo("America/New_York")
+MILEAGE_PROJECTION_MAX_AGE_DAYS = 45
 
 
 def add_months(day: date, months: int) -> date:
@@ -89,6 +90,8 @@ class IntervalDue:
     due: date | None
     reason: str | None
     needs_readings: bool = False
+    mileage_projection_state: str | None = None
+    mileage_reading_age_days: int | None = None
 
     @property
     def has_date(self) -> bool:
@@ -115,30 +118,57 @@ def whichever_comes_first(
     if months_interval is not None and last_date is not None:
         candidates.append((add_months(last_date, months_interval), "months"))
 
-    current = readings[-1][1] if readings else None
-    anchor = readings[-1][0] if readings else today
+    ordered_readings = sorted(readings, key=lambda row: (row[0], row[1]))
+    current = ordered_readings[-1][1] if ordered_readings else None
+    anchor = ordered_readings[-1][0] if ordered_readings else today
+    projection_state: str | None = None
+    reading_age_days: int | None = None
     if miles_interval is not None and last_miles is not None and current is not None:
         target = last_miles + miles_interval
         remaining = target - current
         if remaining <= 0:
             candidates.append((anchor, "miles"))
         else:
-            rate = miles_per_day(readings)
-            projected = project_mileage_date(anchor, remaining, rate) if rate else None
+            reading_age_days = max(0, (today - anchor).days)
+            if reading_age_days > MILEAGE_PROJECTION_MAX_AGE_DAYS:
+                projection_state = "stale"
+                projected = None
+            else:
+                rate = miles_per_day(ordered_readings)
+                if rate is None:
+                    projection_state = "insufficient"
+                elif rate <= 0:
+                    projection_state = "zero_use"
+                else:
+                    projection_state = "recent"
+                projected = project_mileage_date(anchor, remaining, rate) if rate and rate > 0 else None
             if projected is None:
                 needs_readings = True
             else:
                 candidates.append((projected, "miles"))
     elif miles_interval is not None and (last_miles is None or current is None):
         needs_readings = True
+        projection_state = "missing"
 
     if not candidates:
-        return IntervalDue(due=None, reason=None, needs_readings=needs_readings)
+        return IntervalDue(
+            due=None,
+            reason=None,
+            needs_readings=needs_readings,
+            mileage_projection_state=projection_state,
+            mileage_reading_age_days=reading_age_days,
+        )
     candidates.sort(key=lambda item: item[0])
     first_day = candidates[0][0]
     reasons = [reason for day, reason in candidates if day == first_day]
     reason = "both" if len(reasons) > 1 else reasons[0]
-    return IntervalDue(due=first_day, reason=reason, needs_readings=False)
+    return IntervalDue(
+        due=first_day,
+        reason=reason,
+        needs_readings=False,
+        mileage_projection_state=projection_state,
+        mileage_reading_age_days=reading_age_days,
+    )
 
 
 def reminder_status(due: date | None, today: date, window_days: int) -> str:

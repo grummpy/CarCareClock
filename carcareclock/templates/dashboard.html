@@ -25,6 +25,7 @@
             <span>{{ item.label }}</span>
             <em>{{ item.phrase }}</em>
             {% if item.date_label %}<time>{{ item.date_label }}</time>{% endif %}
+            <small class="date-basis">{{ item.date_basis }}</small>
           </a>
         </li>
       {% endfor %}
@@ -57,6 +58,7 @@
               <strong>{{ chip.label }}</strong>
               <em>{{ chip.phrase }}</em>
               {% if chip.date_label %}<time>{{ chip.date_label }}</time>{% endif %}
+              <small class="date-basis">{{ chip.date_basis }}</small>
             </li>
           {% endfor %}
         </ul>
@@ -99,6 +101,7 @@
           <div>
             <a href="{{ url_for('vehicle', vehicle_id=item.vehicle_id) }}">{{ item.vehicle_name }} · {{ item.label }}</a>
             <span>{{ item.phrase }}</span>
+            <small class="date-basis">{{ item.date_basis }}</small>
           </div>
         </li>
       {% endfor %}

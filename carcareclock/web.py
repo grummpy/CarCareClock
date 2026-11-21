@@ -190,7 +190,10 @@ def create_app(
         items = all_items(g.db, rules, defaults, today)
         mine = [item for item in items if item.vehicle_id == vehicle_id]
         intervals = g.db.execute(
-            "SELECT item_key, miles, months FROM intervals WHERE vehicle_id = ? ORDER BY item_key",
+            """
+            SELECT item_key, miles, months, source_reference, service_profile, guidance_checked_on
+            FROM intervals WHERE vehicle_id = ? ORDER BY item_key
+            """,
             (vehicle_id,),
         ).fetchall()
         labels = {item.key: item.label for item in defaults.items}
@@ -242,6 +245,9 @@ def create_app(
                     key,
                     _optional_int(request.form.get(f"miles_{key}", "")),
                     _optional_int(request.form.get(f"months_{key}", "")),
+                    request.form.get(f"source_reference_{key}", "").strip(),
+                    request.form.get(f"service_profile_{key}", "unverified").strip(),
+                    request.form.get(f"guidance_checked_on_{key}", "").strip(),
                 )
             )
         try:
